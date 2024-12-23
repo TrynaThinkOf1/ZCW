@@ -24,12 +24,12 @@ import utils.hash as hash
 #####################
 @app.route('/api/user/create', methods=['POST'])
 def create_user():
+    passkey = hash.hashPasskey(request.form.get('passkey'))
+    email = request.form.get('email')
+    phone_number = request.form.get('phoneNumber')
     first_name = request.form.get('firstName')
     last_name = request.form.get('lastName')
     display_name = request.form.get('displayName')
-    email = request.form.get('email')
-    phone_number = request.form.get('phoneNumber')
-    passkey = hash.hashPasskey(request.form.get('passkey'))
     bio = request.form.get('bio')
     website = request.form.get('website')
 
@@ -88,12 +88,16 @@ def update(email):
     if not user:
         return jsonify({"message": "User not Found"}), 404
 
+    if request.form.get("newPasskey") and request.form.get("newPasskey") != user.passkey:
+        user.passkey = hash.hashPasskey(request.form.get("newPasskey"))
+        db.session.commit()
+
     if request.form.get("newEmail") and request.form.get("newEmail") != user.email:
         user.email = request.form.get("newEmail")
         db.session.commit()
 
-    if request.form.get("newPasskey") and request.form.get("newPasskey") != user.passkey:
-        user.passkey = hash.hashPasskey(request.form.get("newPasskey"))
+    if request.form.get("newPhoneNumber") and request.form.get("newPhoneNUmber") != user.phone_number:
+        user.phone_number = request.form.get("newPhoneNumber")
         db.session.commit()
 
     if request.form.get("newFirstName") and request.form.get("newFirstName") != user.first_name:
@@ -102,10 +106,6 @@ def update(email):
 
     if request.form.get("newLastName") and request.form.get("newLastName") != user.last_name:
         user.last_name = request.form.get("newLastName")
-        db.session.commit()
-
-    if request.form.get("newPhoneNumber") and request.form.get("newPhoneNUmber") != user.phone_number:
-        user.phone_number = request.form.get("newPhoneNumber")
         db.session.commit()
 
     if request.form.get("newDisplayName") and request.form.get("newDisplayName") != user.display_name:
