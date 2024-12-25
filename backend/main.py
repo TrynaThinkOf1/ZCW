@@ -26,17 +26,14 @@ import utils.hash as hash
 def create_user():
     passkey = hash.hashPasskey(request.form.get('passkey'))
     email = request.form.get('email')
-    phone_number = request.form.get('phoneNumber')
     first_name = request.form.get('firstName')
     last_name = request.form.get('lastName')
     display_name = request.form.get('displayName')
-    bio = request.form.get('bio')
-    website = request.form.get('website')
 
     if User.query.filter_by(email=email).first() is not None:
         return jsonify({"message": "Email already registered"}), 400
 
-    user = User(first_name=first_name, last_name=last_name, email=email, phone_number=phone_number, passkey=passkey, bio=bio, website=website, display_name=display_name)
+    user = User(first_name=first_name, last_name=last_name, email=email, passkey=passkey, display_name=display_name)
     db.session.add(user)
     db.session.flush()
 
@@ -94,10 +91,6 @@ def update(email):
 
     if request.form.get("newEmail") and request.form.get("newEmail") != user.email:
         user.email = request.form.get("newEmail")
-        db.session.commit()
-
-    if request.form.get("newPhoneNumber") and request.form.get("newPhoneNUmber") != user.phone_number:
-        user.phone_number = request.form.get("newPhoneNumber")
         db.session.commit()
 
     if request.form.get("newFirstName") and request.form.get("newFirstName") != user.first_name:

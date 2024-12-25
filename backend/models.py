@@ -21,7 +21,6 @@ class User(db.Model):
     passkey = db.Column(db.String, nullable=False)
     # Personal Info
     email = db.Column(db.String)
-    phone_number = db.Column(db.String(10), unique=True)
     first_name = db.Column(db.String(25), nullable=False)
     last_name = db.Column(db.String(25), nullable=False)
     # User Info
@@ -34,7 +33,6 @@ class User(db.Model):
         return {
             "id": self.id,
             "email": self.email,
-            "phone_number": self.phone_number,
             "first_name": self.first_name,
             "last_name": self.last_name,
             "display_name": self.display_name,
