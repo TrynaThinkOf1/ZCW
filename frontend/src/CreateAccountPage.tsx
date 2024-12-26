@@ -28,7 +28,7 @@ function MakeForm() {
             return false;
         }
         const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!Boolean(re.test(email))) {
+        if (!re.test(email)) {
             set_missingField("Please add a valid Email Address");
             return false;
         }
