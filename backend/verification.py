@@ -4,7 +4,6 @@ from models import VerificationCodes
 from flask_mail import Mail, Message
 from datetime import datetime, timedelta
 import random
-import string
 from os import environ
 
 # Email configuration
@@ -16,11 +15,13 @@ app.config['MAIL_PASSWORD'] = environ.get('MAIL_PASSKEY')
 mail = Mail(app)
 
 def gen_save_code():
-    characters = string.ascii_letters + string.digits
+    characters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0']
     code = ''.join(random.choice(characters) for _ in range(6))
+    print(code)
     saved_code = VerificationCodes(code=code)
     db.session.add(saved_code)
     db.session.commit()
+    print("code saved: ", saved_code.code)
     return code
 
 def send_email(email, code):
@@ -44,15 +45,17 @@ def send_email(email, code):
 
 def send_verify(email):
     code = gen_save_code()
+    print(code)
 
-    try:
-        send_email(email, code)
-        return {'message': 'Verification email sent'}, 200
-    except Exception as e:
-        return {'error': str(e)}, 500
+    print("about to send email")
+    send_email(email, code)
+    print("email sent")
+    return {'message': 'Verification email sent', 'code': code}, 200
 
 def check_verify(code):
-    if VerificationCodes.query.filter_by(code=code).first():
+    code_check = VerificationCodes.query.filter_by(code=code).first()
+    print(code_check)
+    if code_check:
         return True
     else:
         return False

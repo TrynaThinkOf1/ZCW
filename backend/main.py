@@ -21,38 +21,43 @@ from utils import hash
 ######################################
 
 ######################################
-#           POST ENDPOINT
-#####################
-@app.route('/api/user/create', methods=['POST'])
-def create_user():
-    passkey = hash.hashPasskey(request.form.get('passkey'))
-    email = request.form.get('email')
-    first_name = request.form.get('firstName')
-    last_name = request.form.get('lastName')
-    display_name = request.form.get('displayName')
+@app.route('/api/user/verify/<string:email>', methods=['GET'])
+def verify(email: str):
+    return jsonify(send_verify(email))
 
-    if User.query.filter_by(email=email).first() is not None:
-        return jsonify({"message": "Email already registered"}), 400
+@app.route('/api/code/verify/<string:code>', methods=['POST'])
+def verify_code(code):
+    if not check_verify(code):
+        return jsonify({"message": "Invalid code"}), 401
+    else:
+        passkey = hash.hashPasskey(request.form.get('passkey'))
+        email = request.form.get('email')
+        first_name = request.form.get('firstName')
+        last_name = request.form.get('lastName')
+        display_name = request.form.get('displayName')
 
-    user = User(first_name=first_name, last_name=last_name, email=email, passkey=passkey, display_name=display_name)
-    db.session.add(user)
-    db.session.flush()
+        if User.query.filter_by(email=email).first() is not None:
+            return jsonify({"message": "Email already registered"}), 400
 
-    if request.files.get('pfp'):
-        pfp = request.files.get('pfp')
-        filepath = os.path.join("./files/pfps/", f"{user.id}.{pfp.filename.rsplit('.', 1)[-1]}")
-        pfp.save(filepath)
-        user.path_to_pfp = filepath
+        user = User(first_name=first_name, last_name=last_name, email=email, passkey=passkey, display_name=display_name)
+        db.session.add(user)
+        db.session.flush()
 
-    db.session.commit()
-    return user.to_json(), 201
+        if request.files.get('pfp'):
+            pfp = request.files.get('pfp')
+            filepath = os.path.join("./files/pfps/", f"{user.id}.{pfp.filename.rsplit('.', 1)[-1]}")
+            pfp.save(filepath)
+            user.path_to_pfp = filepath
+
+        db.session.commit()
+        return user.to_json(), 201
 ######################################
 
 ######################################
 #           GET ENDPOINT
 #####################
 @app.route('/api/user/get/<string:email>', methods=['GET'])
-def get(email):
+def get(email: str):
     user = User.query.filter_by(email=email).first()
 
     if hash.hashPasskey(request.form.get("passkey")) != user.passkey:
@@ -146,20 +151,7 @@ def delete(email):
 ######################################
 
 ######################################
-#      VERIFICATION ENDPOINTS
-#####################
-@app.route('/api/user/verify/<string:email>', methods=['POST'])
-def verify(email):
-    return send_verify(email)
-
-@app.route('/api/code/verify/<string:code>', methods=['GET'])
-def verify_code(code):
-    if check_verify(code):
-        return jsonify({"code": code}), 200
-
-######################################
-if __name__ == '__main__':
-    with app.app_context():
-        #db.drop_all() # uncomment to clear databases
-        db.create_all()
-    app.run(host='0.0.0.0', port=5000, debug=True) # ¡¡¡ DO NOT RUN ON DEBUG IN PROD !!!
+with app.app_context():
+    #db.drop_all() # uncomment to clear databases
+    db.create_all()
+app.run(host='0.0.0.0', port=5000, debug=True)  # ¡¡¡ DO NOT RUN ON DEBUG IN PROD !!!

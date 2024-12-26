@@ -15,4 +15,12 @@ def test_delete():
     response = requests.delete(f"{url}/api/user/delete/zeviberlin@gmail.com", data={"passkey": "thisIsNotARealPasskey"})
     print(response.json())
 
-test_delete()
+def test_verify():
+    response = requests.get(f"{url}/api/user/verify/fosterdraws@gmail.com")
+    print(response)
+    code = input("Enter verification code: ")
+    response = requests.post(f"{url}/api/code/verify/{code}", data={"firstName": "Foster", "lastName": "Berlin", "email": "fosterdraws@gmail.com",
+    "passkey": "testPasskey2", "displayName": "Super Awesome Cool Girl"})
+    print(response.json())
+
+test_verify()
