@@ -16,7 +16,7 @@ import os
 
 from config import app, db
 from models import User
-import utils.hash as hash
+from utils import hash
 ######################################
 
 ######################################

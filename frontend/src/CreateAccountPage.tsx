@@ -64,7 +64,7 @@ function MakeForm() {
         data.append("email", email)
         data.append("passkey", passkey)
 
-        const response = fetch("http://45.79.216.238:1/api/user/create", {
+        const response = fetch("http://172.20.10.2:5000/api/user/create", {
             method: "POST",
             body: data
         })
