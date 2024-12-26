@@ -11,6 +11,7 @@
 #####################
 # IMPORT LIBRARIES
 from config import db
+from datetime import datetime
 ######################################
 
 ######################################
@@ -43,8 +44,10 @@ class User(db.Model):
 class VerificationCodes(db.Model):
     id = db.Column(db.Integer, unique=True, nullable=False, primary_key=True, autoincrement=True)
     code = db.Column(db.String, unique=True, nullable=False)
+    time_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
     def to_json(self):
         return {
-            "code": self.code
+            "code": self.code,
+            "time_created": self.time_created,
         }

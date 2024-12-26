@@ -14,6 +14,16 @@ app.config['MAIL_USERNAME'] = 'noreply.zeviberlin@gmail.com'
 app.config['MAIL_PASSWORD'] = environ.get('MAIL_PASSKEY')
 mail = Mail(app)
 
+def cleanup():
+    expiration_cutoff = datetime.utcnow() - timedelta(minutes=15)
+    expired_codes = VerificationCodes.query.filter(VerificationCodes.created_at <= expiration_cutoff).all()
+
+    for code in expired_codes:
+        db.session.delete(code)
+
+    db.session.commit()
+
+
 def gen_save_code():
     characters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0']
     code = ''.join(random.choice(characters) for _ in range(6))
@@ -36,7 +46,7 @@ def send_email(email, code):
         <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
             <h1 style="color: #333; text-align: center; letter-spacing: 5px;">{code}</h1>
         </div>
-        <p style="color: #666;">This code will expire in 1 hour.</p>
+        <p style="color: #666;">This code will expire in 15 minutes.</p>
         <p style="color: #999; font-size: 12px;">If you didn't request this verification, please ignore this email.</p>
     </div>
     '''
@@ -53,9 +63,13 @@ def send_verify(email):
     return {'message': 'Verification email sent', 'code': code}, 200
 
 def check_verify(code):
+    cleanup()
+
     code_check = VerificationCodes.query.filter_by(code=code).first()
     print(code_check)
     if code_check:
+        db.session.delete(code_check)
+        db.session.commit()
         return True
     else:
         return False
