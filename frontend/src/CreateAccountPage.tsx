@@ -10,53 +10,68 @@ function MakeForm() {
     const [passkey, set_passkey] = useState<string>("");
     const [verif_passkey, set_verifyPasskey] = useState<string>("");
 
+    const [missingField, set_missingField] = useState<string | null>(null);
+
     const checkForm = () => {
-        let nameCheck = true
-        let emailCheck = true
-        let passkeyCheck = true
-
-        if (!(displayName && firstName && lastName)) {
-            nameCheck = false
+        if (!displayName) {
+            console.log("missing display name");
+            set_missingField("Please add a Display Name");
+            return false
         }
-
+        if (!firstName) {
+            console.log("missing first name");
+            set_missingField("Please add a First Name");
+            return false
+        }
+        if (!lastName) {
+            console.log("missing last name");
+            set_missingField("Please add a Last Name");
+            return false
+        }
         let re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!Boolean(re.test(email))) {
-            emailCheck = false
+            console.log("missing valid email address");
+            set_missingField("Please add a valid Email Address");
+            return false
+        }
+        if (!passkey || passkey !== verif_passkey) {
+            console.log("missing passkey or passkeys dont match");
+            if (passkey !== verif_passkey) {
+                set_missingField("Passkeys don't match");
+                return false
+            }
+            set_missingField("Please enter a Passkey");
+            return false
         }
 
-        if (passkey !== verif_passkey) {
-            passkeyCheck = false
-        }
-
-        if (nameCheck && emailCheck && passkeyCheck) {
-            return true
-        }
-        return false
+        set_missingField(null);
+        return true
     }
 
     const sendRequest = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault()
 
         if (!checkForm()) {
-            alert("Form is Invalid")
+            return;
         }
-        else {
-            const data = new FormData()
 
-            data.append("displayName", displayName)
-            data.append("firstName", firstName)
-            data.append("lastName", lastName)
-            data.append("email", email)
-            data.append("passkey", passkey)
+        event.preventDefault()
+        const data = new FormData()
 
-            const response = fetch("http://45.79.216.238:1/api/user/create", {
-                method: "POST",
-                body: data
-            })
-            .then(res => res.json())
-                .then(res => console.log(res))
-                .catch((error) => console.log(error))
-        }
+        data.append("displayName", displayName)
+        data.append("firstName", firstName)
+        data.append("lastName", lastName)
+        data.append("email", email)
+        data.append("passkey", passkey)
+
+        const response = fetch("http://45.79.216.238:1/api/user/create", {
+            method: "POST",
+            body: data
+        })
+        .then(res => res.json())
+            .then(res => console.log(res))
+            .catch((error) => console.log(error))
+
     }
 
   return (
@@ -64,13 +79,27 @@ function MakeForm() {
           <h1>Create Account</h1>
           <div id="form-container">
               <form onSubmit={sendRequest}>
-                  <input type="text" id="displayname" placeholder="Display Name" onChange={(e) => set_displayName(e.target.value)} required /><br/>
-                  <input type="text" id="firstname" placeholder="First Name" onChange={(e) => set_firstName(e.target.value)} required /><br/>
-                  <input type="text" id="lastname" placeholder="Last Name" onChange={(e) => set_lastName(e.target.value)} required /><br/>
-                  <input type="text" id="email" placeholder="Email" onChange={(e) => set_email(e.target.value)} required /><br/>
-                  <input id="passkey" type="password" placeholder="Passkey" onChange={(e) => set_passkey(e.target.value)} required /><br/>
-                  <input id="verif-passkey" type="password" placeholder="Verify Passkey" onChange={(e) => set_verifyPasskey(e.target.value)} required /><br/>
-                  <button id="submit">Create Account</button>
+                  <input type="text" id="displayname" placeholder="Display Name"
+                         onChange={(e) => set_displayName(e.target.value)} required/><br/>
+                  <input type="text" id="firstname" placeholder="First Name"
+                         onChange={(e) => set_firstName(e.target.value)} required/><br/>
+                  <input type="text" id="lastname" placeholder="Last Name"
+                         onChange={(e) => set_lastName(e.target.value)} required/><br/>
+                  <input type="text" id="email" placeholder="Email" onChange={(e) => set_email(e.target.value)}
+                         required/><br/>
+                  <input id="passkey" type="password" placeholder="Passkey"
+                         onChange={(e) => set_passkey(e.target.value)} required/><br/>
+                  <input id="verif-passkey" type="password" placeholder="Verify Passkey"
+                         onChange={(e) => set_verifyPasskey(e.target.value)} required/><br/>
+                  {missingField && (<p className="error-message">{missingField}</p>)}
+                  <div id="terms-container">
+                      <input type="checkbox" id="terms-checkbox"/>
+                      <label htmlFor="terms-checkbox">
+                          I agree to the <a href="/terms" target="_blank" rel="noopener noreferrer">Terms and
+                          Conditions</a>
+                      </label>
+                  </div>
+                  <button id="submit" formNoValidate>Create Account</button>
               </form>
           </div>
       </Fragment>
@@ -78,7 +107,7 @@ function MakeForm() {
 }
 
 export default function MyApp() {
-  return (
-      <MakeForm />
-  );
+    return (
+        <MakeForm/>
+    );
 }
