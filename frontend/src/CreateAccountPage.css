@@ -73,9 +73,14 @@ h1, h2, h3 {
     color: white;
     border: none;
     border-radius: 8px;
-    font-size: 1em;
-    padding: 12px 20px;
     cursor: pointer;
+
+    text-align: center;
+    font-size: 1em;
+    font-family: inherit;
+    width: 100%;
+    padding: 12px;
+    margin: 10px 10px;
     transition: all 0.3s ease;
 }
 
