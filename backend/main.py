@@ -16,6 +16,7 @@ import os
 
 from config import app, db
 from models import User
+from verification import send_verify, check_verify
 from utils import hash
 ######################################
 
@@ -143,6 +144,18 @@ def delete(email):
     db.session.commit()
     return jsonify({"message": "User Deleted"}), 200
 ######################################
+
+######################################
+#      VERIFICATION ENDPOINTS
+#####################
+@app.route('/api/user/verify/<string:email>', methods=['POST'])
+def verify(email):
+    return send_verify(email)
+
+@app.route('/api/code/verify/<string:code>', methods=['GET'])
+def verify_code(code):
+    if check_verify(code):
+        return jsonify({"code": code}), 200
 
 ######################################
 if __name__ == '__main__':

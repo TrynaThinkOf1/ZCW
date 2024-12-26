@@ -39,4 +39,12 @@ class User(db.Model):
             "bio": self.bio,
             "website": self.website
         }
-######################################
+#####################
+class VerificationCodes(db.Model):
+    id = db.Column(db.Integer, unique=True, nullable=False, primary_key=True, autoincrement=True)
+    code = db.Column(db.String, unique=True, nullable=False)
+
+    def to_json(self):
+        return {
+            "code": self.code
+        }
