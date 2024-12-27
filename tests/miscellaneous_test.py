@@ -16,11 +16,11 @@ def test_delete():
     print(response.json())
 
 def test_verify():
-    response = requests.get(f"{url}/api/user/verify/fosterdraws@gmail.com")
+    response = requests.get(f"{url}/api/user/verify/zeviberlin@gmail.com")
     print(response)
     code = input("Enter verification code: ")
-    response = requests.post(f"{url}/api/code/verify/{code}", data={"firstName": "Foster", "lastName": "Berlin", "email": "fosterdraws@gmail.com",
-    "passkey": "testPasskey2", "displayName": "Super Awesome Cool Girl"})
+    response = requests.post(f"{url}/api/code/verify/{code}", data={"firstName": "Zevi", "lastName": "Berlin", "email": "zeviberlin@gmail.com",
+    "passkey": "testPasskey2", "displayName": "TrynaThinkOf1"})
     print(response.json())
 
 test_verify()
