@@ -155,4 +155,5 @@ with app.app_context():
     #db.drop_all() # uncomment to clear databases
     db.create_all()
     cleanup()
-app.run(host='0.0.0.0', port=5000)  # ¡¡¡ DO NOT RUN ON DEBUG IN PROD !!!
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=5001)  # ¡¡¡ DO NOT RUN ON DEBUG IN PROD !!!

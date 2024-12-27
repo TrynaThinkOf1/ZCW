@@ -5,3 +5,4 @@ sendgrid
 rich
 requests
 certifi
+gunicorn
