@@ -10,13 +10,13 @@ from os import environ
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'noreply.zeviberlin@gmail.com'
-app.config['MAIL_PASSWORD'] = environ['MAIL_PASSKEY']
+app.config['MAIL_USERNAME'] = environ['MAIL_HOST_EMAIL']
+app.config['MAIL_PASSWORD'] = environ['MAIL_HOST_PASSKEY']
 mail = Mail(app)
 
 def cleanup():
     expiration_cutoff = datetime.utcnow() - timedelta(minutes=15)
-    expired_codes = VerificationCodes.query.filter(VerificationCodes.created_at <= expiration_cutoff).all()
+    expired_codes = VerificationCodes.query.filter(VerificationCodes.time_created <= expiration_cutoff).all()
 
     for code in expired_codes:
         db.session.delete(code)
@@ -51,7 +51,11 @@ def send_email(email, code):
     </div>
     '''
 
-    mail.send(msg)
+    try:
+        mail.send(msg)
+    except Exception as e:
+        print(e)
+        return {"message": e}
 
 def send_verify(email):
     code = gen_save_code()

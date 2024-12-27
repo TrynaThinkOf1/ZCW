@@ -15,9 +15,11 @@ import base64
 import os
 
 from config import app, db
-from models import User, VerificationCodes
+from models import User
 from verification import send_verify, check_verify
 from utils import hash
+
+
 ######################################
 
 ######################################
@@ -152,6 +154,6 @@ def delete(email):
 
 ######################################
 with app.app_context():
-    db.drop_all() # uncomment to clear databases
+    #db.drop_all() # uncomment to clear databases
     db.create_all()
-app.run(host='0.0.0.0', port=5000, debug=True)  # ¡¡¡ DO NOT RUN ON DEBUG IN PROD !!!
+app.run(host='0.0.0.0', port=5000)  # ¡¡¡ DO NOT RUN ON DEBUG IN PROD !!!
