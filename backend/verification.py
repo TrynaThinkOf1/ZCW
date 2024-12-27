@@ -5,14 +5,12 @@ from flask_mail import Mail, Message
 from datetime import datetime, timedelta
 import random
 from os import environ
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail, Email, To, Content, HtmlContent
 
-# Email configuration
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = environ['MAIL_HOST_EMAIL']
-app.config['MAIL_PASSWORD'] = environ['MAIL_HOST_PASSKEY']
-mail = Mail(app)
+
+SENDGRID_API_KEY = environ['user_auth_api_MAIL_API_KEY']
+SENDER_EMAIL = environ['user_auth_api_MAIL_HOST_EMAIL']
 
 def cleanup():
     expiration_cutoff = datetime.utcnow() - timedelta(minutes=15)
@@ -35,11 +33,7 @@ def gen_save_code():
     return code
 
 def send_email(email, code):
-    msg = Message('Email Verification',
-                  sender='noreply.zeviberlin@gmail.com',
-                  recipients=[email])
-
-    msg.html = f'''
+    html = f'''
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <h2 style="color: #333;">Verify Your Email</h2>
         <p style="color: #666;">Thank you for registering! Please use the following code to verify your email address:</p>
@@ -52,10 +46,25 @@ def send_email(email, code):
     '''
 
     try:
-        mail.send(msg)
+        message = Mail(
+            from_email=Email(SENDER_EMAIL),
+            to_emails=To(email),
+            subject='Email Verification',
+            html_content=HtmlContent(html)
+        )
+
+        # Send email using SendGrid
+        sg = SendGridAPIClient(SENDGRID_API_KEY)
+        response = sg.send(message)
+
+        # Log success or handle any issues
+        if response.status_code not in [200, 201, 202]:
+            print(f"SendGrid API response: {response.status_code}")
+            return {"message": f"Failed to send email: {response.status_code}"}
+
     except Exception as e:
-        print(e)
-        return {"message": e}
+        print(f"SendGrid error: {str(e)}")
+        return {"message": str(e)}
 
 def send_verify(email):
     code = gen_save_code()
