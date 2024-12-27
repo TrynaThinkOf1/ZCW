@@ -44,16 +44,28 @@ def send_email(email, code):
     '''
 
     try:
+        sender_email = environ['user_auth_api_MAIL_HOST_EMAIL']
+        print(f"Attempting to send from: {sender_email}")
+        print(f"Sending to: {email}")
+        
         message = Mail(
-            from_email=Email(environ['user_auth_api_MAIL_HOST_EMAIL']),
+            from_email=Email(sender_email),
             to_emails=To(email),
             subject='Email Verification',
             html_content=HtmlContent(html)
         )
 
-        sg = SendGridAPIClient(environ['user_auth_api_MAIL_API_KEY'])
+        api_key = environ['user_auth_api_MAIL_API_KEY']
+        
+        sg = SendGridAPIClient(api_key)
+        
+        print("Sending email through SendGrid...")
         response = sg.send(message)
-
+        
+        print(f"SendGrid Response Status Code: {response.status_code}")
+        print(f"SendGrid Response Headers: {response.headers}")
+        print(f"SendGrid Response Body: {response.body}")
+        
         if response.status_code not in [200, 201, 202]:
             print(f"SendGrid API response code: {response.status_code}")
             return {"message": f"Failed to send email: {response.status_code}"}
