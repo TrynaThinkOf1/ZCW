@@ -11,7 +11,7 @@ app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USERNAME'] = 'noreply.zeviberlin@gmail.com'
-app.config['MAIL_PASSWORD'] = environ.get('MAIL_PASSKEY')
+app.config['MAIL_PASSWORD'] = environ['MAIL_PASSKEY']
 mail = Mail(app)
 
 def cleanup():
