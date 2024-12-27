@@ -27,17 +27,18 @@ def cleanup():
 def gen_save_code():
     characters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0']
     code = ''.join(random.choice(characters) for _ in range(6))
-    print(code)
     saved_code = VerificationCodes(code=code)
     db.session.add(saved_code)
     db.session.commit()
-    print("code saved: ", saved_code.code)
+    print("code saved: ", saved_code.code+'	'+datetime.now().strftime('%H:%M:%S'))
     return code
 
 def send_email(email, code):
     msg = Message('Email Verification',
                   sender='noreply.zeviberlin@gmail.com',
                   recipients=[email])
+
+    print("msg loaded"+'	'+datetime.now().strftime('%H:%M:%S'))
 
     msg.html = f'''
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -50,23 +51,25 @@ def send_email(email, code):
         <p style="color: #999; font-size: 12px;">If you didn't request this verification, please ignore this email.</p>
     </div>
     '''
+    print("msg.html loaded"+'	'+datetime.now().strftime('%H:%M:%S'))
 
-    mail.send(msg)
+    print(mail.send(msg))
+    print("finished mail.send(msg)")
 
 def send_verify(email):
     code = gen_save_code()
-    print(code)
+    print(code+'	'+datetime.now().strftime('%H:%M:%S'))
 
-    print("about to send email")
+    print("about to send email"+'	'+datetime.now().strftime('%H:%M:%S'))
     send_email(email, code)
-    print("email sent")
+    print("email sent"+'	'+datetime.now().strftime('%H:%M:%S'))
     return {'message': 'Verification email sent', 'code': code}, 200
 
 def check_verify(code):
     cleanup()
 
     code_check = VerificationCodes.query.filter_by(code=code).first()
-    print(code_check)
+    print(code_check+'	'+datetime.now().strftime('%H:%M:%S'))
     if code_check:
         db.session.delete(code_check)
         db.session.commit()
