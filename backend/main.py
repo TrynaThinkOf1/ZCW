@@ -16,10 +16,8 @@ import os
 
 from config import app, db
 from models import User
-from verification import send_verify, check_verify
+from verification import send_verify, check_verify, cleanup
 from utils import hash
-
-
 ######################################
 
 ######################################
@@ -156,4 +154,5 @@ def delete(email):
 with app.app_context():
     #db.drop_all() # uncomment to clear databases
     db.create_all()
+    cleanup()
 app.run(host='0.0.0.0', port=5000)  # ¡¡¡ DO NOT RUN ON DEBUG IN PROD !!!

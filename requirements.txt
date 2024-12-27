@@ -3,3 +3,5 @@ flask-sqlalchemy
 flask-cors
 sendgrid
 rich
+requests
+certifi

@@ -1,16 +1,13 @@
 from config import app, db
 from models import VerificationCodes
 
-from flask_mail import Mail, Message
 from datetime import datetime, timedelta
 import random
 from os import environ
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail, Email, To, Content, HtmlContent
-
-
-SENDGRID_API_KEY = environ['user_auth_api_MAIL_API_KEY']
-SENDER_EMAIL = environ['user_auth_api_MAIL_HOST_EMAIL']
+import certifi
+import ssl
 
 def cleanup():
     expiration_cutoff = datetime.utcnow() - timedelta(minutes=15)
@@ -32,6 +29,7 @@ def gen_save_code():
     print("code saved: ", saved_code.code)
     return code
 
+
 def send_email(email, code):
     html = f'''
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -47,24 +45,26 @@ def send_email(email, code):
 
     try:
         message = Mail(
-            from_email=Email(SENDER_EMAIL),
+            from_email=Email(environ['user_auth_api_MAIL_HOST_EMAIL']),
             to_emails=To(email),
             subject='Email Verification',
             html_content=HtmlContent(html)
         )
 
-        # Send email using SendGrid
-        sg = SendGridAPIClient(SENDGRID_API_KEY)
+        sg = SendGridAPIClient(environ['user_auth_api_MAIL_API_KEY'])
         response = sg.send(message)
 
-        # Log success or handle any issues
         if response.status_code not in [200, 201, 202]:
-            print(f"SendGrid API response: {response.status_code}")
+            print(f"SendGrid API response code: {response.status_code}")
             return {"message": f"Failed to send email: {response.status_code}"}
 
+        print(f"Email sent successfully to {email}")
+        return None
+
     except Exception as e:
-        print(f"SendGrid error: {str(e)}")
-        return {"message": str(e)}
+        error_message = f"SendGrid error: {str(e)}"
+        print(error_message)
+        return {"message": error_message}
 
 def send_verify(email):
     code = gen_save_code()
