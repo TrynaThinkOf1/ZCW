@@ -1,25 +1,25 @@
 import React, { useState } from "react";
-import { verifyEmail, verifyCode } from "./services/apiService.tsx";
+import { verifyEmail, verifyCode } from "./services/apiService";
 
-const emailVerification: React.FC = () => {
-    const [code, setCode] = useState<string>("");
-    const [email, setEmail] = useState<string>("");
-    const [step, setStep] = useState<number>(1);
+const EmailVerification: React.FC = () => {
+    const [email, setEmail] = useState("");
+    const [code, setCode] = useState("");
+    const [step, setStep] = useState(1);
     const [userData, setUserData] = useState({
         passkey: "",
+        email: "",
         firstName: "",
         lastName: "",
-        displayName: ""
+        displayName: "",
     });
 
-    const handleEmailSubmit = async (email: string) => {
+    const handleEmailSubmit = async () => {
         try {
             const response = await verifyEmail(email);
             alert(response.message);
             setStep(2);
-
         } catch (error: any) {
-            alert(error.response?.data?.error?.message || "Error verifying email");
+            alert(error.response?.data?.message || "Error verifying email.");
         }
     };
 
@@ -31,7 +31,7 @@ const emailVerification: React.FC = () => {
         } catch (error: any) {
             alert(error.response?.data?.message || "Error verifying code.");
         }
-    }
+    };
 
     return (
         <div>
@@ -95,4 +95,4 @@ const emailVerification: React.FC = () => {
     );
 };
 
-export default emailVerification;
+export default EmailVerification;
