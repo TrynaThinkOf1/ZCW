@@ -5,6 +5,8 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-4.4.2-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-17.0.2-blue?logo=react&logoColor=white)](https://reactjs.org/)
 
+# Running: _[here](https://vercel.com/zevis-projects-5939b949/user-auth-api/DLERH2qtEiskzw4X2BCmukFQBZtn)_
+
 ## Overview
 
 The **User Authentication API** is a comprehensive project that demonstrates the integration of a backend API with a frontend application. The backend is built using Python's Flask framework, providing robust user authentication functionalities. The frontend is developed with React and TypeScript, offering a dynamic and type-safe user interface. This project showcases the seamless communication between the backend and frontend, emphasizing the creation of APIs that facilitate such interactions.
@@ -26,7 +28,3 @@ Through the development of this project, I have:
 - Acquired practical experience in TypeScript, improving code quality and maintainability.
 - Learned to implement secure user authentication mechanisms.
 - Understood the intricacies of connecting a frontend application with a backend API.
-
-## Visit the Site
-
-Its entirely possible that I'm currently running the site at `http://45.79.216.238:5173/` this link is safe, it points to a safe encrypted VPS. Nonetheless, **PLEASE EXERCISE CAUTION AND DO NOT USE YOUR REAL INFORMATION ON THIS SITE!**
