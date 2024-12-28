@@ -1,7 +1,7 @@
-import CreateAccountPage from "./CreateAccountPage.tsx";
+import emailVerification from "./emailVerification.tsx";
 
 function App() {
-    return CreateAccountPage();
+    return emailVerification;
 }
 
 export default App;
