@@ -1,7 +1,7 @@
-import emailVerification from "./emailVerification.tsx";
+import EmailVerification from "./emailVerification.tsx"; // Correct naming for the component
 
 function App() {
-    return emailVerification;
+    return <EmailVerification />; // Render the component as JSX
 }
 
 export default App;
