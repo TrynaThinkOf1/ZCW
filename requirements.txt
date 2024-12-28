@@ -1,9 +1,9 @@
 flask
 flask-sqlalchemy
 flask-cors
+flask-jwt-extended
 sendgrid
 rich
 requests
 certifi
 gunicorn
-unittest

@@ -3,7 +3,7 @@
 #################################
 
 #==========================================================================#
-#======================== MAIN APP & ENDPOINTS ============================#
+#======================= ACCOUNT APP & ENDPOINTS ==========================#
 #==========================================================================#
 
 ######################################
@@ -11,11 +11,13 @@
 #####################
 # IMPORT LIBRARIES
 from flask import request, jsonify
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 import base64
 import os
+from datetime import datetime
 
-from config import app, db
-from models import User
+from config import app, db, jwt
+from models import User, Post, Comment
 from verification import send_verify, check_verify, cleanup
 from utils import hash
 ######################################
@@ -50,21 +52,24 @@ def verify_code(code):
             user.path_to_pfp = filepath
 
         db.session.commit()
-        return user.to_json(), 201
+
+        token = create_access_token(identity={"id": user.id})
+
+        return {"user": user.to_json(), "token": token}, 201
 ######################################
 
 ######################################
 #           GET ENDPOINT
 #####################
-@app.route('/api/user/get/<string:email>', methods=['GET'])
-def get(email: str):
-    user = User.query.filter_by(email=email).first()
-
-    if hash.hashPasskey(request.form.get("passkey")) != user.passkey:
-        return jsonify({"message": "Invalid Passkey"}), 401
-
+@app.route('/api/user/get', methods=['GET'])
+@jwt_required()
+def get():
+    jwt_id = get_jwt_identity()
+    if not jwt_id:
+        return jsonify({"message": "JWT required"}), 403
+    user = User.query.filter_by(id=jwt_id["id"]).first()
     if not user:
-        return jsonify({"message": "User not Found"}), 404
+        return jsonify({"message": "How does one acquire a valid token without a valid user..?"}), 404
 
     try:
         with open(user.path_to_pfp, "rb") as image_file:
@@ -81,15 +86,15 @@ def get(email: str):
 ######################################
 #           PATCH ENDPOINT
 #####################
-@app.route('/api/user/update/<string:email>', methods=['PATCH'])
-def update(email):
-    user = User.query.filter_by(email=email).first()
-
-    if hash.hashPasskey(request.form.get("passkey")) != user.passkey:
-        return jsonify({"message": "Invalid Passkey"}), 401
-
+@app.route('/api/user/update', methods=['PATCH'])
+@jwt_required()
+def update():
+    jwt_id = get_jwt_identity()
+    if not jwt_id:
+        return jsonify({"message": "JWT required"}), 403
+    user = User.query.filter_by(id=jwt_id["id"]).first()
     if not user:
-        return jsonify({"message": "User not Found"}), 404
+        return jsonify({"message": "How does one acquire a valid token without a valid user..?"}), 404
 
     if request.form.get("newPasskey") and request.form.get("newPasskey") != user.passkey:
         user.passkey = hash.hashPasskey(request.form.get("newPasskey"))
@@ -149,6 +154,30 @@ def delete(email):
     db.session.commit()
     return jsonify({"message": "User Deleted"}), 200
 ######################################
+
+#==========================================================================#
+#======================== FORUM APP & ENDPOINTS ===========================#
+#==========================================================================#
+
+@app.route('/api/post/create', methods=['POST'])
+@jwt_required()
+def post_create():
+    jwt_id = get_jwt_identity()
+    if not jwt_id:
+        return jsonify({"message": "JWT Required"}), 401
+
+    user = User.query.filter_by(id=jwt_id["id"]).first()
+    if not user:
+        return jsonify({"message": "How does one acquire a valid token without a valid user..?"}), 404
+
+    poster = user.id
+    markdown_content = request.form.get("markdownContent")
+
+    post = Post(poster=poster, markdown_content=markdown_content)
+    db.session.add(post)
+    db.session.commit()
+
+    return jsonify({"post": post.to_json()}), 200
 
 ######################################
 with app.app_context():

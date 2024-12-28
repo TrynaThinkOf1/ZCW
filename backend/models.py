@@ -15,7 +15,7 @@ from datetime import datetime
 ######################################
 
 ######################################
-#          USER DATABASE
+#             DATABASES
 #####################
 class User(db.Model):
     id = db.Column(db.Integer, unique=True, nullable=False, primary_key=True, autoincrement=True)
@@ -51,3 +51,30 @@ class VerificationCodes(db.Model):
             "code": self.code,
             "time_created": self.time_created,
         }
+#####################
+class Post(db.Model):
+    id = db.Column(db.Integer, unique=True, nullable=False, primary_key=True, autoincrement=True)
+    timestamp = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    poster = db.Column(db.String, db.ForeignKey("user.id"), nullable=False)
+    markdown_content = db.Column(db.String, nullable=False)
+    num_likes = db.Column(db.Integer, nullable=False, default=0)
+
+    comments = db.relationship("Comment", backref="post", cascade="all, delete-orphan")
+
+    def to_json(self):
+        return {
+            "id": self.id,
+            "timestamp": self.timestamp,
+            "poster": self.poster,
+            "markdown_content": self.markdown_content,
+            "num_likes": self.num_likes,
+            "comments": self.comments,
+        }
+
+class Comment(db.Model):
+    id = db.Column(db.Integer, unique=True, nullable=False, primary_key=True, autoincrement=True)
+    timestamp = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    poster_id = db.Column(db.Integer, db.ForeignKey("post.id"), nullable=False)
+    markdown_content = db.Column(db.String, nullable=False)
+    num_likes = db.Column(db.Integer, nullable=False)

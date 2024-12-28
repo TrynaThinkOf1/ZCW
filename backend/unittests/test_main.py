@@ -1,76 +1,118 @@
 import unittest
-from unittest.mock import patch
+from flask_jwt_extended import create_access_token
+
+import sys
+import os
+
+# Add the backend directory to the Python path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from main import app, db
-from models import User
-from utils import hash  # Import the hashing utility
+from models import User, VerificationCodes
 
 class TestMain(unittest.TestCase):
     def setUp(self):
-        """Setup a test client and test database."""
+        app.config['TESTING'] = True
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
         self.app = app.test_client()
-        self.app.testing = True
-
-        # Mock database setup
         with app.app_context():
             db.create_all()
-            # Add a mock user for testing, ensuring the passkey is hashed
-            self.user = User(
+
+            # Add a test user
+            test_user = User(
+                email="test@example.com",
                 first_name="Test",
                 last_name="User",
-                email="test@example.com",
-                passkey=hash.hashPasskey("testpass"),  # Save hashed password
                 display_name="TestUser",
+                passkey="hashed_test_passkey",
             )
-            db.session.add(self.user)
+            db.session.add(test_user)
             db.session.commit()
 
+            # Store the test user ID for re-fetching
+            self.test_user_id = test_user.id
+
     def tearDown(self):
-        """Clean up after tests."""
         with app.app_context():
             db.session.remove()
             db.drop_all()
 
+    def insert_verification_code(self, code):
+        with app.app_context():
+            verification = VerificationCodes(code=code)
+            db.session.add(verification)
+            db.session.commit()
+
+    def test_user_registration_and_login(self):
+        self.insert_verification_code("test-code")
+        response = self.app.post(
+            '/api/code/verify/test-code',
+            data={
+                'passkey': 'test_passkey',
+                'email': 'newuser@example.com',
+                'firstName': 'New',
+                'lastName': 'User',
+                'displayName': 'NewUser',
+            }
+        )
+        self.assertEqual(response.status_code, 201)
+        data = response.get_json()
+        self.assertIn('token', data)
+        self.assertEqual(data['user']['email'], 'newuser@example.com')
+
     def test_get_user(self):
-        """Test the /api/user/get/<email> endpoint."""
-        data = {
-            "passkey": hash.hashPasskey("testpass"),  # Hash the test passkey
-        }
+        with app.app_context():
+            user = User.query.get(self.test_user_id)
+            token = create_access_token(identity={"id": user.id})
+
         response = self.app.get(
-            "/api/user/get/test@example.com",
-            data=data,
-            content_type="application/x-www-form-urlencoded",
+            '/api/user/get',
+            headers={"Authorization": f"Bearer {token}"}
         )
         self.assertEqual(response.status_code, 200)
-        self.assertIn("user", response.get_json())
+        data = response.get_json()
+        self.assertEqual(data['user']['email'], "test@example.com")
+
+    def test_create_post(self):
+        with app.app_context():
+            user = User.query.get(self.test_user_id)
+            token = create_access_token(identity={"id": user.id})
+
+        response = self.app.post(
+            '/api/post/create',
+            headers={"Authorization": f"Bearer {token}"},
+            data={"markdownContent": "This is a test post"}
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.get_json()
+        self.assertIn('post', data)
+        self.assertEqual(data['post']['markdown_content'], "This is a test post")
 
     def test_update_user(self):
-        """Test the /api/user/update/<email> endpoint."""
-        data = {
-            "passkey": hash.hashPasskey("testpass"),  # Hash the test passkey
-            "newDisplayName": "UpdatedName",
-        }
+        with app.app_context():
+            user = User.query.get(self.test_user_id)
+            token = create_access_token(identity={"id": user.id})
+
         response = self.app.patch(
-            "/api/user/update/test@example.com",
-            data=data,
-            content_type="application/x-www-form-urlencoded",
+            '/api/user/update',
+            headers={"Authorization": f"Bearer {token}"},
+            data={"newDisplayName": "UpdatedUser"}
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.get_json()["user"]["display_name"], "UpdatedName"
-        )
+        data = response.get_json()
+        self.assertEqual(data['user']['display_name'], "UpdatedUser")
 
     def test_delete_user(self):
-        """Test the /api/user/delete/<email> endpoint."""
-        data = {
-            "passkey": hash.hashPasskey("testpass"),  # Hash the test passkey
-        }
+        with app.app_context():
+            user = User.query.get(self.test_user_id)
+
         response = self.app.delete(
-            "/api/user/delete/test@example.com",
-            data=data,
-            content_type="application/x-www-form-urlencoded",
+            f'/api/user/delete/{user.email}',
+            data={"passkey": "hashed_test_passkey"}
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.get_json(), {"message": "User Deleted"})
+        data = response.get_json()
+        self.assertEqual(data['message'], "User Deleted")
 
 if __name__ == "__main__":
     unittest.main()

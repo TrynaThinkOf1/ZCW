@@ -1,13 +1,11 @@
-from config import app, db
+from config import db
 from models import VerificationCodes
 
 from datetime import datetime, timedelta
 import random
 from os import environ
 from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail, Email, To, Content, HtmlContent
-import certifi
-import ssl
+from sendgrid.helpers.mail import Mail, Email, To, HtmlContent
 
 def cleanup():
     expiration_cutoff = datetime.utcnow() - timedelta(minutes=15)
