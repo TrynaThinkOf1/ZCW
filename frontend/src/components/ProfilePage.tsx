@@ -1,23 +1,28 @@
-import React from "react";
-import { useLocation } from "react-router-dom";
+import React, {Fragment} from "react";
+import { useLocation, Link } from "react-router-dom";
 
 const ProfilePage: React.FC = () => {
   const { state } = useLocation();
   const user = state?.user;
 
   if (!user) {
-    return <p>No user data found. Please verify your email.</p>;
+    return <Fragment><p>No user data found. </p><Link to="/login">Login</Link></Fragment>;
   }
 
-  return (
-    <div>
-      <h1>Welcome, {user.display_name}</h1>
-      <p>Email: {user.email}</p>
-      <p>First Name: {user.first_name}</p>
-      <p>Last Name: {user.last_name}</p>
-      {/* Add additional user information here */}
-    </div>
-  );
+  const renderProfile = () => {
+      return (
+          <div id="outer-container">
+              <div className="profile">
+                  <img
+                      src={`data:image/jpeg;base64,${user.pfp}`}
+                      alt="Profile"
+                      style={{width: "150px", height: "150px", borderRadius: "50%"}}
+                  />
+              </div>
+          </div>
+      )
+  }
+  return renderProfile();
 };
 
 export default ProfilePage;

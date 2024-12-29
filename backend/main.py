@@ -67,7 +67,7 @@ def verify_code(code):
 ######################################
 #           GET ENDPOINTS
 #####################
-@app.route('/api/user/get', methods=['GET'])
+@app.route('/api/user/get', methods=['POST'])
 @jwt_required()
 def get():
     jwt_id = get_jwt_identity()
@@ -83,8 +83,8 @@ def get():
         with open("./files/pfps/default.jpg", "rb") as image_file:
             image_base64 = base64.b64encode(image_file.read()).decode('utf-8')
 
-    return jsonify({"user": user.to_json(), "profile_picture": image_base64}), 200
-@app.route('/api/user/login', methods=['GET'])
+    return jsonify({"user": user.to_json(), "pfp": image_base64}), 200
+@app.route('/api/user/login', methods=['POST'])
 def login():
     email = request.json.get('email')
     passkey = hash.hashPasskey(request.json.get('passkey'))
@@ -96,9 +96,17 @@ def login():
     if passkey != user.passkey:
         return jsonify({"message": "Incorrect Passkey"}), 401
 
+    try:
+        with open(user.path_to_pfp, "rb") as image_file:
+            image_base64 = base64.b64encode(image_file.read()).decode('utf-8')
+    except Exception as e:
+        print(e)
+        with open("./files/pfps/default.jpg", "rb") as image_file:
+            image_base64 = base64.b64encode(image_file.read()).decode('utf-8')
+
     token = create_access_token(identity={"id": user.id})
 
-    return jsonify({"user": user.to_json(), "token": token}), 200
+    return jsonify({"user": user.to_json(), "token": token, "pfp": image_base64}), 200
 ######################################
 
 ######################################
