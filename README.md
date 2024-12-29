@@ -5,7 +5,6 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-4.4.2-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-17.0.2-blue?logo=react&logoColor=white)](https://reactjs.org/)
 
-# Running: _[here](https://user-auth-16c2brazk-zevis-projects-5939b949.vercel.app/)_
 
 ## Overview
 
