@@ -5,10 +5,6 @@ const ProfilePage: React.FC = () => {
   const { state } = useLocation();
   const user = state?.user;
 
-  if (!user) {
-    return <Fragment><p>No user data found. </p><Link to="/login">Login</Link></Fragment>;
-  }
-
   const renderProfile = () => {
       return (
           <div id="outer-container">
@@ -21,6 +17,9 @@ const ProfilePage: React.FC = () => {
               </div>
           </div>
       )
+  }
+  if (user) {
+      return (<Fragment><p>No user data found. </p><Link to="/login">Login</Link></Fragment>);
   }
   return renderProfile();
 };
