@@ -38,7 +38,8 @@ const CreateAccount: React.FC = () => {
       renderMessage("Code verified. Redirecting...");
       setTimeout(() => navigate("/profile", { state: { user } }), 1000);
     } catch (error: any) {
-      renderMessage(error.response?.data?.message || "Error verifying code.");
+      renderMessage(error.response?.data?.message || "Error");
+      console.error(error);
     }
   };
 

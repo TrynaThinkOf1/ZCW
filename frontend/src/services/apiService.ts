@@ -1,7 +1,8 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://45.79.216.238:5001/api"
+  baseURL: "http://45.79.216.238:5001/api",
+  headers: {"Content-Type": "application/json"}
 });
 
 export const verifyEmail = async (email: string) => {
@@ -27,6 +28,6 @@ export const getUser = async () => {
 };
 
 export const login = async (payload: any) => {
-  const response = await api.get("/user/login", payload)
+  const response = await api.post("/user/login", payload)
   return response.data;
 }
