@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { verifyEmail, verifyCode } from "../services/apiService";
-import '../style/EmailVerification.css'
+import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
-const EmailVerification: React.FC = () => {
+const CreateAccount: React.FC = () => {
   const [code, setCode] = useState("");
   const [step, setStep] = useState(1);
   const [userData, setUserData] = useState({
@@ -23,7 +24,7 @@ const EmailVerification: React.FC = () => {
         inputElement.classList.add("error");
         setTimeout(() => {
           inputElement.classList.remove("error");
-        }, 1500); // Remove the effect after 1.5s
+        }, 1500);
       }
     }
 };
@@ -45,12 +46,21 @@ const EmailVerification: React.FC = () => {
   const handleCodeSubmit = async () => {
     try {
       const response = await verifyCode(code, userData);
-      renderMessage("Code verified");
-      console.log(response);
+      const { token, user } = response;
+
+      localStorage.setItem("jwt", token);
+
+      console.log("User Info:", user);
+      console.log("Token:", token);
+
+      renderMessage("Code verified. Redirecting...");
+      setTimeout(() => navigate("/profile", { state: { user } }), 1000);
     } catch (error: any) {
       renderMessage(error.response?.data?.message || "Error verifying code.");
     }
   };
+
+  const navigate = useNavigate();
 
   return (
       <div id="outer-container">
@@ -105,6 +115,7 @@ const EmailVerification: React.FC = () => {
                 /><br/>
                 {message && <p className="message">{message}</p>}
                 <br/><button onClick={handleEmailSubmit}>Create Account</button>
+                <br/><Link to="/login">or Login</Link>
               </div>
           )}
           {step === 2 && (
@@ -113,9 +124,8 @@ const EmailVerification: React.FC = () => {
                 <input
                     type="text"
                     value={code}
-                    onChange={(e) => setCode(e.target.value)}
                     placeholder="Enter the code"
-                    autoCapitalize="characters"
+                    onChange={(e) => setCode(e.target.value.toUpperCase())}
               />
               {message && <p className="message">{message}</p>}
               <button onClick={handleCodeSubmit}>Verify</button>
@@ -126,4 +136,4 @@ const EmailVerification: React.FC = () => {
   );
 };
 
-export default EmailVerification;
+export default CreateAccount;

@@ -65,7 +65,7 @@ def verify_code(code):
 ######################################
 
 ######################################
-#           GET ENDPOINT
+#           GET ENDPOINTS
 #####################
 @app.route('/api/user/get', methods=['GET'])
 @jwt_required()
@@ -84,6 +84,21 @@ def get():
             image_base64 = base64.b64encode(image_file.read()).decode('utf-8')
 
     return jsonify({"user": user.to_json(), "profile_picture": image_base64}), 200
+@app.route('/api/user/login', methods=['GET'])
+def login():
+    email = request.json.get('email')
+    passkey = hash.hashPasskey(request.json.get('passkey'))
+
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return jsonify({"message": "User not Found"}), 404
+
+    if passkey != user.passkey:
+        return jsonify({"message": "Incorrect Passkey"}), 401
+
+    token = create_access_token(identity={"id": user.id})
+
+    return jsonify({"user": user.to_json(), "token": token}), 200
 ######################################
 
 ######################################
