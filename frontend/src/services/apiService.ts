@@ -2,7 +2,7 @@ import axios from "axios";
 
 const api = axios.create({
   baseURL: "http://45.79.216.238:5001/api",
-  headers: {"Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("token")}`},
+  headers: {"Content-Type": "application/json"},
 });
 
 export const verifyEmail = async (email: string) => {
@@ -35,7 +35,10 @@ export const updateUser = async (payload: any) => {
   if (!token) {
     throw new Error("No token found. Please log in.");
   }
+  console.log(payload);
+  console.log(token);
 
   const response = await api.patch(`/user/update`, payload)
+  console.log(response.data);
   return response.data;
 }

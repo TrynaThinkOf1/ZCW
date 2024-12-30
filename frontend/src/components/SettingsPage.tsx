@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useLocation, Link } from "react-router-dom";
-import { verifyEmail, updateUser } from "../api"; // Import API functions
+import { updateUser } from "../services/apiService.ts"; // Import API functions
 import styles from "../style/SettingsPage.module.css";
 
 const SettingsPage: React.FC = () => {
