@@ -80,6 +80,7 @@ def get():
             image_base64 = base64.b64encode(image_file.read()).decode('utf-8')
     except Exception as e:
         print(e)
+        print("returning default pfp")
         with open("./files/pfps/default.jpg", "rb") as image_file:
             image_base64 = base64.b64encode(image_file.read()).decode('utf-8')
 
@@ -101,6 +102,7 @@ def login():
             image_base64 = base64.b64encode(image_file.read()).decode('utf-8')
     except Exception as e:
         print(e)
+        print("returning default pfp")
         with open("./files/pfps/default.jpg", "rb") as image_file:
             image_base64 = base64.b64encode(image_file.read()).decode('utf-8')
 

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { login } from "../services/apiService";
-import '../style/CreateAccount.css';
+import styles from "../style/LoginPage.module.css"
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 
@@ -32,11 +32,8 @@ const CreateAccount: React.FC = () => {
 
       localStorage.setItem("jwt", token);
 
-      console.log("User Info:", user);
-      console.log("Token:", token);
-
-      renderMessage("Code verified. Redirecting...");
-      setTimeout(() => navigate("/profile", { state: { user } }), 1000);
+      renderMessage("Login Successful");
+      setTimeout(() => navigate("/profile", { state: { user, pfp: response.pfp } }), 1000);
     } catch (error: any) {
       renderMessage(error.response?.data?.message || "Error");
       console.error(error);
@@ -46,7 +43,7 @@ const CreateAccount: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-      <div id="outer-container">
+      <div className={styles.outercontainer}>
         <div>
               <div>
                 <h2>Login</h2>
@@ -63,7 +60,7 @@ const CreateAccount: React.FC = () => {
                     onChange={(e) => setUserData({...userData, passkey: e.target.value})}
                     placeholder="Passkey"
                 /><br/>
-                {message && <p className="message">{message}</p>}
+                {message && <p className={styles.message}>{message}</p>}
                 <br/><button onClick={handleLogin}>Login</button>
                 <br/><Link to="/create-account">or Create Account</Link>
               </div>

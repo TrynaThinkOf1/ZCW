@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { verifyEmail, verifyCode } from "../services/apiService";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
+import styles from "../style/CreateAccount.module.css";
 
 const CreateAccount: React.FC = () => {
   const [code, setCode] = useState("");
@@ -63,7 +64,7 @@ const CreateAccount: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-      <div id="outer-container">
+      <div className={styles.outercontainer}>
         <div>
           {step === 1 && (
               <div>

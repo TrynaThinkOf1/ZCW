@@ -1,0 +1,81 @@
+/* Stretch layout */
+.outerContainer {
+  margin: 10vh 8vw; /* Relative margins */
+  padding: 1rem;
+  background-color: #9067C6;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Settings button */
+.settingsButton {
+  position: absolute;
+  top: 2%;
+  right: 2%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  color: #f7ece1;
+  transition: transform 0.2s;
+}
+
+.settingsButton:hover {
+  transform: scale(1.1);
+}
+
+.settingsIcon {
+  width: 32px;
+  height: 32px;
+}
+
+/* Profile Content Layout */
+.profileContainer {
+  display: flex;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.leftColumn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex: 1;
+}
+
+.rightColumn {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.profilePicture {
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  margin-bottom: 1rem;
+}
+
+.bio {
+  margin-top: 1rem;
+}
+
+.bio h3 {
+  margin: 0.5rem 0;
+}
+
+.postsContainer {
+  width: 100%;
+  height: auto;
+  padding: 1rem;
+  background-color: #8d86c9;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  color: #cac4ce;
+}

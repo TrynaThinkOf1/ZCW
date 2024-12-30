@@ -13,7 +13,7 @@ body {
 }
 
 /* Outer Container */
-#outer-container {
+.outercontainer {
     display: flex;
     flex-direction: column;
     justify-content: center;
