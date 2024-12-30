@@ -136,6 +136,7 @@ def login():
 @jwt_required()
 def update():
     print("UPDATE:")
+    print("Received payload:", request.json)
     jwt_id = get_jwt_identity()
     print(f"jwt identity: {jwt_id}, jwt id: {jwt_id['id']}")
     user = User.query.filter_by(id=jwt_id["id"]).first()
