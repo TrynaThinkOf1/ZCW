@@ -67,7 +67,7 @@ def verify_code(code):
 
     token = create_access_token(identity={"id": user.id})
 
-    print({"user": user.to_json(), "token": token} + "\n=================================")
+    print({"user": user.to_json(), "token": token}, "\n=================================")
     return jsonify({"user": user.to_json(), "token": token}), 201
 ######################################
 
@@ -95,7 +95,7 @@ def get():
         with open("./files/pfps/default.jpg", "rb") as image_file:
             image_base64 = base64.b64encode(image_file.read()).decode('utf-8')
 
-    print({"user": user.to_json()} + "\n=================================")
+    print({"user": user.to_json()}, "\n=================================")
     return jsonify({"user": user.to_json(), "pfp": image_base64}), 200
 @app.route('/api/user/login', methods=['POST'])
 def login():
@@ -125,7 +125,7 @@ def login():
 
     token = create_access_token(identity={"id": user.id})
 
-    print({"user": user.to_json(), "token": token} + "\n=================================")
+    print({"user": user.to_json(), "token": token}, "\n=================================")
     return jsonify({"user": user.to_json(), "token": token, "pfp": image_base64}), 200
 ######################################
 
@@ -190,7 +190,7 @@ def update():
     db.session.commit()
     print("session committed")
 
-    print({"user": user.to_json()} + "\n=================================")
+    print({"user": user.to_json()}, "\n=================================")
     return jsonify({"user": user.to_json()}), 200
 ######################################
 
