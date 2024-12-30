@@ -25,7 +25,7 @@ const ProfilePage: React.FC = () => {
         {/* Settings Button */}
         <button
           className={styles.settingsButton}
-          onClick={() => navigate("/settings")}
+          onClick={() => navigate("/settings", { state: { user, pfp } })}
           >
             <img className={styles.settingsIcon} src={SettingsLogo} alt="Settings Logo" />
         </button>

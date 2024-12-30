@@ -2,7 +2,7 @@ import axios from "axios";
 
 const api = axios.create({
   baseURL: "http://45.79.216.238:5001/api",
-  headers: {"Content-Type": "application/json"}
+  headers: {"Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("token")}`},
 });
 
 export const verifyEmail = async (email: string) => {
@@ -21,13 +21,21 @@ export const getUser = async () => {
     throw new Error("No token found. Please log in.");
   }
 
-  const response = await api.get("/user/get", {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const response = await api.get("/user/get");
   return response.data;
 };
 
 export const login = async (payload: any) => {
   const response = await api.post("/user/login", payload)
+  return response.data;
+}
+
+export const updateUser = async (payload: any) => {
+  const token = localStorage.getItem("jwt");
+  if (!token) {
+    throw new Error("No token found. Please log in.");
+  }
+
+  const response = await api.patch(`/user/update`, payload)
   return response.data;
 }

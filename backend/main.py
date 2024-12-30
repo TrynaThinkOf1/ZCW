@@ -126,7 +126,12 @@ def update():
         user.passkey = hash.hashPasskey(request.json.get("newPasskey"))
 
     if request.json.get("newEmail") and request.json.get("newEmail") != user.email:
-        user.email = request.json.get("newEmail")
+        send_verify(request.json.get("newEmail"))
+    if request.json.get("verificationCode"):
+        if check_verify(request.json.get("verificationCode")):
+            user.email = request.json.get("verifiedEmail")
+        else:
+            return jsonify({"message": "Invalid verification code"}), 401
 
     if request.json.get("newFirstName") and request.json.get("newFirstName") != user.first_name:
         user.first_name = request.json.get("newFirstName")
