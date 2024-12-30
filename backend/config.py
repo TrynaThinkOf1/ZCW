@@ -34,9 +34,16 @@ db = SQLAlchemy(app)
 #####################
 # CONFIGURE SESSIONS
 Session(app)
+
+session_file_dir = os.path.join(os.getcwd(), '.flask_session')
+os.makedirs(session_file_dir, exist_ok=True)
+
 app.config['SECRET_KEY'] = os.environ['user_auth_api_FLASK_SESSION_TOKEN']
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
+app.config['SESSION_FILE_DIR'] = session_file_dir
+app.config['SESSION_USE_SIGNER'] = True
+app.config['SESSION_KEY_PREFIX'] = 'flask_session:'
 ######################################
 
 banner_text = """
