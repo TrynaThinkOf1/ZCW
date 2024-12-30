@@ -13,7 +13,7 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
-from flask_jwt_extended import JWTManager
+from flask_session import Session
 
 import os
 from datetime import timedelta
@@ -32,10 +32,11 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 db = SQLAlchemy(app)
 
 #####################
-# CONFIGURE JWT
-app.config['JWT_SECRET_KEY'] = os.environ['user_auth_api_FLASK_JWT_TOKEN']
-app.config['JWT_TOKEN_EXPIRES'] = timedelta(hours=1)
-jwt = JWTManager(app)
+# CONFIGURE SESSIONS
+Session(app)
+app.config['SECRET_KEY'] = os.environ['user_auth_api_FLASK_SESSION_TOKEN']
+app.config['SESSION_TYPE'] = 'filesystem'
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
 ######################################
 
 banner_text = """

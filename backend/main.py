@@ -10,12 +10,10 @@
 #          INITIALIZATION
 #####################
 # IMPORT LIBRARIES
-from flask import request, jsonify
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from flask import request, jsonify, session
 from sqlalchemy import func
 from werkzeug.utils import secure_filename
-import base64
-import os
+import base64, os
 
 from config import app, db
 from models import User, Post, Comment
@@ -65,25 +63,27 @@ def verify_code(code):
     db.session.commit()
     print("session committed")
 
-    token = create_access_token(identity={"id": user.id})
+    session["user_id"] = user.id
+    session.permanent = True
 
-    print({"user": user.to_json(), "token": token}, "\n=================================")
-    return jsonify({"user": user.to_json(), "token": token}), 201
+    print({"user": user.to_json()}, "\n=================================")
+    return jsonify({"user": user.to_json()}), 201
 ######################################
 
 ######################################
 #           GET ENDPOINTS
 #####################
 @app.route('/api/user/get', methods=['POST'])
-@jwt_required()
 def get():
     print("GET:")
-    jwt_id = get_jwt_identity()
-    print(f"jwt identity: {jwt_id}, jwt id: {jwt_id['id']}")
-    user = User.query.filter_by(id=jwt_id["id"]).first()
+    user = User.query.filter_by(email=request.json.get("email")).first()
     if not user:
         print("user not found")
         return jsonify({"message": "User not Found"}), 404
+
+    if "user_id" not in session:
+        print("session expired")
+        return jsonify({"message": "Session expired, please log in again"}), 401
 
     try:
         with open(user.path_to_pfp, "rb") as image_file:
@@ -123,26 +123,28 @@ def login():
         with open("./files/pfps/default.jpg", "rb") as image_file:
             image_base64 = base64.b64encode(image_file.read()).decode('utf-8')
 
-    token = create_access_token(identity={"id": user.id})
+    session['user_id'] = user.id
+    session.permanent = True
 
-    print({"user": user.to_json(), "token": token}, "\n=================================")
-    return jsonify({"user": user.to_json(), "token": token, "pfp": image_base64}), 200
+    print({"user": user.to_json()}, "\n=================================")
+    return jsonify({"user": user.to_json(), "pfp": image_base64}), 200
 ######################################
 
 ######################################
 #           PATCH ENDPOINT
 #####################
 @app.route('/api/user/update', methods=['PATCH'])
-@jwt_required()
 def update():
     print("UPDATE:")
     print("Received payload:", request.json)
-    jwt_id = get_jwt_identity()
-    print(f"jwt identity: {jwt_id}, jwt id: {jwt_id['id']}")
-    user = User.query.filter_by(id=jwt_id["id"]).first()
+    user = User.query.filter_by(email=request.json.get("email")).first()
     if not user:
         print("user not found")
         return jsonify({"message": "User not Found"}), 404
+
+    if "user_id" not in session:
+        print("session expired")
+        return jsonify({"message": "Session expired, please login again"}), 401
 
     if request.json.get("newPasskey") and request.json.get("newPasskey") != user.passkey:
         user.passkey = hash.hashPasskey(request.json.get("newPasskey"))
@@ -211,8 +213,14 @@ def delete(email):
         print("user not found")
         return jsonify({"message": "User not Found"}), 404
 
+    if "user_id" not in session:
+        print("session expired")
+        return jsonify({"message": "Session expired, please login again"}), 401
+
     (os.remove(user.path_to_pfp) if os.path.exists(user.path_to_pfp) else None)
     print("removed old pfp if it existed")
+
+    session.pop(user.id, None)
 
     db.session.delete(user)
     db.session.commit()
@@ -227,12 +235,14 @@ def delete(email):
 #==========================================================================#
 
 @app.route('/api/post/create', methods=['POST'])
-@jwt_required()
 def post_create():
-    jwt_id = get_jwt_identity()
-    user = User.query.filter_by(id=jwt_id["id"]).first()
+    user = User.query.filter_by(email=request.json.get("email")).first()
     if not user:
         return jsonify({"message": "User not Found"}), 404
+
+    if "user_id" not in session:
+        print("session expired")
+        return jsonify({"message": "Session expired, please login again"}), 401
 
     poster = user.id
     markdown_content = request.json.get("markdownContent")
@@ -244,12 +254,14 @@ def post_create():
     return jsonify({"post": post.to_json()}), 200
 
 @app.route('/api/post/update', methods=['PATCH'])
-@jwt_required()
 def post_update():
-    jwt_id = get_jwt_identity()
-    user = User.query.filter_by(id=jwt_id["id"]).first()
+    user = User.query.filter_by(email=request.json.get("email")).first()
     if not user:
         return jsonify({"message": "User not Found"}), 404
+
+    if "user_id" not in session:
+        print("session expired")
+        return jsonify({"message": "Session expired, please login again"}), 401
 
     new_markdown_content = request.json.get("markdownContent")
     if not new_markdown_content:
@@ -263,12 +275,13 @@ def post_update():
     return jsonify({"post": post.to_json()}), 200
 
 @app.route('/api/post/delete/', methods=['DELETE'])
-@jwt_required()
 def post_delete():
-    jwt_id = get_jwt_identity()
-    user = User.query.filter_by(id=jwt_id["id"]).first()
+    user = User.query.filter_by(email=request.json.get("email")).first()
     if not user:
         return jsonify({"message": "User not Found"}), 404
+
+    if "user_id" not in session:
+        print("session expired")
 
     post_id = request.json.get("postId")
     post = Post.query.filter_by(id=post_id).first()
@@ -281,7 +294,6 @@ def post_delete():
     return jsonify({"post": post.to_json()}), 200
 
 @app.route('/api/post/get/<int:postid>', methods=['GET'])
-@jwt_required()
 def post_get(postid):
     post = Post.query.filter_by(id=postid).first()
     if not post:
@@ -289,9 +301,7 @@ def post_get(postid):
 
     return jsonify({"post": post.to_json()}), 200
 
-
 @app.route('/api/feed/get', methods=['GET'])
-@jwt_required()
 def feed_get():
     posts = Post.query.order_by(func.random()).limit(50).all()
 
