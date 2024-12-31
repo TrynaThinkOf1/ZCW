@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { login } from "../services/apiService";
+import { loginUser } from "../services/apiService";
 import styles from "../style/LoginPage.module.css"
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
@@ -27,7 +27,7 @@ const CreateAccount: React.FC = () => {
 
   const handleLogin = async () => {
     try {
-      const response = await login(userData);
+      const response = await loginUser(userData.email, userData.passkey);
       const { token, user } = response;
 
       localStorage.setItem("jwt", token);

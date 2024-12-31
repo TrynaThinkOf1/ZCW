@@ -19,7 +19,7 @@ const SettingsPage: React.FC = () => {
     const handleSendEmail = async () => {
         setIsSendingEmail(true);
         try {
-            const response = await updateUser("newEmail", newEmail);
+            const response = await updateUser({"newEmail": newEmail});
             console.log("Verification email sent:", response);
             alert("Verification email sent to " + newEmail);
         } catch (error) {

@@ -1,73 +1,100 @@
-import axios from "axios";
-import {Simulate} from "react-dom/test-utils";
+import axios from 'axios';
+import {config} from "typescript-eslint";
 
 const api = axios.create({
-  baseURL: "http://45.79.216.238:5001/api",
-  headers: { "Content-Type": "application/json" },
+  baseURL: 'http://45.79.216.238:5001/api',
+  timeout: 10000,
+  headers: { 'Content-Type': 'application/json' },
+  withCredentials: true
 });
 
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("jwt");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-      console.log("settings Auth header to: " + token);
-    }
-    console.log(config);
-    return config;
-  },
-  (error) => console.log(error)
-);
-
-// Exported Functions
-export const verifyEmail = async (email: string) => {
-  const response = await api.get(`/user/verify/${email}`);
-  return response.data;
-};
-
-export const verifyCode = async (code: string, payload: any) => {
-  const response = await api.post(`/code/verify/${code}`, payload);
-  return response.data;
-};
-
-export const getUser = async () => {
+const saveData = (data: any) => {
   try {
-    const response = await api.get("/user/get");
+    for (const key in data) {
+      localStorage.setItem(key, JSON.stringify(data[key]));
+      console.log(`${key}: ${localStorage.getItem(key)}`);
+    }
+  } catch (error: any) {
+    console.error("Error saving data to localStorage:", error);
+  }
+};
+
+api.interceptors.response.use(
+  (response) => response,
+  (error: any) => {
+    if (error.response?.status === 401) {
+      console.warn("Session expired, redirecting to login...");
+      window.location.href = "/login";
+    }
+    return Promise.reject(error);
+  }
+);
+api.interceptors.request.use((config) => {
+  console.log('Sending request with cookies:', document.cookie);
+  return config;
+})
+
+export const verifyEmail = async (email: string) => {
+  try {
+    const response = await api.get(`/user/verify/${email}`);
     return response.data;
-  } catch (error) {
-    handleAuthError(error);
+  } catch (error: any) {
+    console.error("Error verifying email:", error.response?.data || error.message);
     throw error;
   }
 };
 
-export const login = async (payload: any) => {
-  const response = await api.post("/user/login", payload);
-  if (response.data && response.data.token) {
-    localStorage.setItem("jwt", response.data.token);
-  }
-  return response.data;
-};
-
-export const updateUser = async (payload_type: string, payload: any) => {
+export const verifyCode = async (code: string, payload: any) => {
   try {
-    const final = { [payload_type]: payload };
-    console.log(final);
-    const response = await api.patch(`/user/update`, final);
-    console.log(response);
-    console.log("Response:", response.data);
+    const response = await api.post(`/code/verify/${code}`, payload);
+    saveData(response.data);
+    return response.data;
   } catch (error: any) {
-    console.error("Error details:", {
-      status: error.response?.status,
-      data: error.response?.data,
-      headers: error.response?.headers,
-    });
+    console.error("Error verifying code:", error.response?.data || error.message);
+    throw error;
   }
 };
 
-const handleAuthError = (error: any) => {
-  if (error.response && error.response.status === 401) {
-    localStorage.removeItem("jwt");
-    alert("Session expired. Please log in again.");
-    window.location.href = "/login";
+export const loginUser = async (email: string, passkey: string) => {
+  try {
+    const response = await api.post('/user/login', { email, passkey });
+    console.log('User logged in:', response.data);
+    saveData({ email, ...response.data });
+    return response.data;
+  } catch (error: any) {
+    console.error('Login failed:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+
+export const updateUser = async (data: any) => {
+  try {
+    const email = JSON.parse(localStorage.getItem("email") || 'null');
+    if (!email) {
+      throw new Error("Email not found in localStorage. Please log in again.");
+    }
+    data["email"] = email;
+
+    const response = await api.patch('/user/update', data);
+    console.log('User updated:', response.data);
+    saveData(response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error('Update failed:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+
+export const getUserData = async (email: string) => {
+  try {
+    const response = await api.post('/user/get', { email });
+    console.log('User data:', response.data);
+    saveData(response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error('Error getting user data:', error.response?.data || error.message);
+    throw error;
   }
 };

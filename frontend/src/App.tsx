@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import CreateAccount from './components/CreateAccount.tsx'; // Import your components
 import LoginPage from './components/LoginPage.tsx';

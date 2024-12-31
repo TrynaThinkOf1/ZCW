@@ -23,7 +23,7 @@ from rich.panel import Panel
 #####################
 # CONFIGURE APP
 app = Flask(__name__)
-CORS(app)
+CORS(app, supports_credentials=True)
 
 console = Console()
 #####################
@@ -38,6 +38,8 @@ app.config['SESSION_TYPE'] = 'filesystem'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
 app.config['SESSION_USE_SIGNER'] = True
 app.config['SESSION_KEY_PREFIX'] = 'flask_session:'
+app.config['SESSION_COOKIE_SAMESITE'] = 'None'
+#app.config['SESSION_COOKIE_SECURE'] = True # UNCOMMENT WHEN USING HTTPS
 
 session_file_dir = os.path.join(os.getcwd(), '.flask_session')
 os.makedirs(session_file_dir, exist_ok=True)
