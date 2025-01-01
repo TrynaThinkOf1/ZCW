@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { loginUser } from "../services/apiService";
-import styles from "../style/LoginPage.module.css"
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 
@@ -28,9 +27,7 @@ const CreateAccount: React.FC = () => {
   const handleLogin = async () => {
     try {
       const response = await loginUser(userData.email, userData.passkey);
-      const { token, user } = response;
-
-      localStorage.setItem("jwt", token);
+      const { user } = response;
 
       renderMessage("Login Successful");
       setTimeout(() => navigate("/profile", { state: { user, pfp: response.pfp } }), 1000);
@@ -43,7 +40,7 @@ const CreateAccount: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-      <div className={styles.outercontainer}>
+      <div className={""}>
         <div>
               <div>
                 <h2>Login</h2>
@@ -60,7 +57,7 @@ const CreateAccount: React.FC = () => {
                     onChange={(e) => setUserData({...userData, passkey: e.target.value})}
                     placeholder="Passkey"
                 /><br/>
-                {message && <p className={styles.message}>{message}</p>}
+                {message && <p className={""}>{message}</p>}
                 <br/><button onClick={handleLogin}>Login</button>
                 <br/><Link to="/create-account">or Create Account</Link>
               </div>

@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import CreateAccount from './components/CreateAccount.tsx'; // Import your components
+import CreateAccount from './components/CreateAccount.tsx';
 import LoginPage from './components/LoginPage.tsx';
 import ProfilePage from './components/ProfilePage.tsx';
 import InitialPage from "./components/InitialPage.tsx";

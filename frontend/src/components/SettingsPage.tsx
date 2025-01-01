@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useLocation, Link } from "react-router-dom";
-import { updateUser } from "../services/apiService.ts"; // Import API functions
-import styles from "../style/SettingsPage.module.css";
+import { updateUser } from "../services/apiService.ts";
 
 const SettingsPage: React.FC = () => {
     const { state } = useLocation();
@@ -61,53 +60,53 @@ const SettingsPage: React.FC = () => {
         }
 
         return (
-            <div className={styles.outerContainer}>
+            <div className={""}>
                 <h2>Settings</h2>
-                <div className={styles.settingItem}>
+                <div className={""}>
                     <label>Current Email: {user.email}</label>
-                    <button className={styles.changeEmailButton} onClick={toggleEmailPopup}>
+                    <button className={""} onClick={toggleEmailPopup}>
                         Change Email
                     </button>
                 </div>
 
                 {showEmailPopup && (
-                    <div className={styles.popupOverlay}>
-                        <div className={styles.popupContainer}>
+                    <div className={""}>
+                        <div className={""}>
                             <h3>Change Email</h3>
-                            <div className={styles.inputGroup}>
+                            <div className={""}>
                                 <label>New Email:</label>
                                 <input
                                     type="email"
                                     value={newEmail}
                                     onChange={(e) => setNewEmail(e.target.value)}
-                                    className={styles.input}
+                                    className={""}
                                 />
                             </div>
-                            <div className={styles.inputGroup}>
+                            <div className={""}>
                                 <label>Verification Code:</label>
                                 <input
                                     type="text"
                                     value={verificationCode}
                                     onChange={(e) => setVerificationCode(e.target.value)}
-                                    className={styles.input}
+                                    className={""}
                                 />
                             </div>
-                            <div className={styles.buttonGroup}>
+                            <div className={""}>
                                 <button
                                     onClick={handleSendEmail}
-                                    className={styles.sendButton}
+                                    className={""}
                                     disabled={isSendingEmail}
                                 >
                                     {isSendingEmail ? "Sending..." : "Send Email"}
                                 </button>
                                 <button
                                     onClick={handleCommitChange}
-                                    className={styles.commitButton}
+                                    className={""}
                                     disabled={isUpdatingEmail}
                                 >
                                     {isUpdatingEmail ? "Updating..." : "Commit Change"}
                                 </button>
-                                <button onClick={toggleEmailPopup} className={styles.cancelButton}>
+                                <button onClick={toggleEmailPopup} className={""}>
                                     Cancel
                                 </button>
                             </div>

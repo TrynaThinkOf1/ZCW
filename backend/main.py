@@ -10,15 +10,15 @@
 #          INITIALIZATION
 #####################
 # IMPORT LIBRARIES
-from flask import request, jsonify, session
+from flask import request, jsonify, make_response
 from sqlalchemy import func
 from werkzeug.utils import secure_filename
 import base64, os
 
-from config import app, db
+from config import app, db, serializer
 from models import User, Post, Comment
 from verification import send_verify, check_verify, cleanup
-from utils import hash, allowed_file
+from utils import hash, allowed_file, check_token
 ######################################
 
 ######################################
@@ -63,27 +63,38 @@ def verify_code(code):
     db.session.commit()
     print("session committed")
 
-    session["user_id"] = user.id
-    session.permanent = True
+    try:
+        with open(user.path_to_pfp, "rb") as image_file:
+            image_base64 = base64.b64encode(image_file.read()).decode('utf-8')
+            print("image successfully loaded")
+    except Exception as e:
+        print(e)
+        print("returning default pfp")
+        with open("./files/pfps/default.jpg", "rb") as image_file:
+            image_base64 = base64.b64encode(image_file.read()).decode('utf-8')
 
-    print({"user": user.to_json()}, "\n=================================")
-    return jsonify({"user": user.to_json()}), 201
+    token = serializer.dumps(email, salt="session-token")
+
+    response = make_response(jsonify({"user": user.to_json(), "pfp": image_base64}), 200)
+    response.set_cookie("zcw_secure_token", token, httponly=True, secure=True, samesite="strict", max_age=36 * 3600)
+
+    print(response)
+    return response
 ######################################
 
 ######################################
 #           GET ENDPOINTS
 #####################
 @app.route('/api/user/get', methods=['POST'])
+@check_token(serializer=serializer)
 def get():
     print("GET:")
-    user = User.query.filter_by(email=request.json.get("email")).first()
+    email = request.json.get('email')
+
+    user = User.query.filter_by(email=email).first()
     if not user:
         print("user not found")
         return jsonify({"message": "User not Found"}), 404
-
-    if "user_id" not in session:
-        print("session expired")
-        return jsonify({"message": "Session expired, please log in again"}), 401
 
     try:
         with open(user.path_to_pfp, "rb") as image_file:
@@ -123,28 +134,31 @@ def login():
         with open("./files/pfps/default.jpg", "rb") as image_file:
             image_base64 = base64.b64encode(image_file.read()).decode('utf-8')
 
-    session['user_id'] = user.id
-    session.permanent = True
+    token = serializer.dumps(email, salt="session-token")
 
-    print({"user": user.to_json()}, "\n=================================")
-    return jsonify({"user": user.to_json(), "pfp": image_base64}), 200
+    response = make_response(jsonify({"user": user.to_json(), "pfp": image_base64}), 200)
+    response.set_cookie("zcw_secure_token", token, httponly=True, secure=True, samesite="strict", max_age=36*3600)
+
+    print(response)
+    return response
 ######################################
 
 ######################################
 #           PATCH ENDPOINT
 #####################
 @app.route('/api/user/update', methods=['PATCH'])
+@check_token(serializer=serializer)
 def update():
     print("UPDATE:")
-    print("Received payload:", request.json)
-    user = User.query.filter_by(email=request.json.get("email")).first()
+    print(f"Received payload: {request.json}")
+    print(f"Received cookies: {request.cookies}")
+
+    email = request.json.get('email')
+
+    user = User.query.filter_by(email=email).first()
     if not user:
         print("user not found")
         return jsonify({"message": "User not Found"}), 404
-
-    if "user_id" not in session:
-        print("session expired")
-        return jsonify({"message": "Session expired, please login again"}), 401
 
     if request.json.get("newPasskey") and request.json.get("newPasskey") != user.passkey:
         user.passkey = hash.hashPasskey(request.json.get("newPasskey"))
@@ -181,14 +195,21 @@ def update():
         print(f"new user website: {user.website}")
 
     if request.files.get("newPfp"):
-        (os.remove(user.path_to_pfp) if os.path.exists(user.path_to_pfp) else None)
-        print("removed old pfp if it existed")
+        try:
+            os.remove(user.path_to_pfp)
+            print("removed old pfp")
+        except Exception as e:
+            print(e)
+
         pfp = request.files.get('newPfp')
         filepath = os.path.join("./files/pfps/", f"{user.id}.{pfp.filename.rsplit('.', 1)[-1]}")
-        pfp.save(filepath)
-        print("saved new pfp")
-        user.path_to_pfp = filepath
-        print(f"new user path_to_pfp: {user.path_to_pfp}")
+        try:
+            pfp.save(filepath)
+            print("saved new pfp")
+            user.path_to_pfp = filepath
+            print(f"new user path_to_pfp: {user.path_to_pfp}")
+        except Exception as e:
+            print(e)
 
     db.session.commit()
     print("session committed")
@@ -201,26 +222,24 @@ def update():
 #          DELETE ENDPOINT
 #####################
 @app.route('/api/user/delete/<string:email>', methods=['DELETE'])
+@check_token(serializer=serializer)
 def delete(email):
     print("DELETE:")
     user = User.query.filter_by(email=email).first()
-
-    if hash.hashPasskey(request.json.get("passkey")) != user.passkey:
-        print("incorrect passkey")
-        return jsonify({"message": "Invalid Passkey"}), 401
 
     if not user:
         print("user not found")
         return jsonify({"message": "User not Found"}), 404
 
-    if "user_id" not in session:
-        print("session expired")
-        return jsonify({"message": "Session expired, please login again"}), 401
+    if hash.hashPasskey(request.json.get("passkey")) != user.passkey:
+        print("incorrect passkey")
+        return jsonify({"message": "Invalid Passkey"}), 401
 
-    (os.remove(user.path_to_pfp) if os.path.exists(user.path_to_pfp) else None)
-    print("removed old pfp if it existed")
-
-    session.pop(user.id, None)
+    try:
+        os.remove(user.path_to_pfp)
+        print("removed old pfp")
+    except Exception as e:
+        print(e)
 
     db.session.delete(user)
     db.session.commit()
@@ -235,14 +254,12 @@ def delete(email):
 #==========================================================================#
 
 @app.route('/api/post/create', methods=['POST'])
+@check_token(serializer=serializer)
 def post_create():
+
     user = User.query.filter_by(email=request.json.get("email")).first()
     if not user:
         return jsonify({"message": "User not Found"}), 404
-
-    if "user_id" not in session:
-        print("session expired")
-        return jsonify({"message": "Session expired, please login again"}), 401
 
     poster = user.id
     markdown_content = request.json.get("markdownContent")
@@ -254,14 +271,12 @@ def post_create():
     return jsonify({"post": post.to_json()}), 200
 
 @app.route('/api/post/update', methods=['PATCH'])
+@check_token(serializer=serializer)
 def post_update():
+
     user = User.query.filter_by(email=request.json.get("email")).first()
     if not user:
         return jsonify({"message": "User not Found"}), 404
-
-    if "user_id" not in session:
-        print("session expired")
-        return jsonify({"message": "Session expired, please login again"}), 401
 
     new_markdown_content = request.json.get("markdownContent")
     if not new_markdown_content:
@@ -275,13 +290,11 @@ def post_update():
     return jsonify({"post": post.to_json()}), 200
 
 @app.route('/api/post/delete/', methods=['DELETE'])
+@check_token(serializer=serializer)
 def post_delete():
     user = User.query.filter_by(email=request.json.get("email")).first()
     if not user:
         return jsonify({"message": "User not Found"}), 404
-
-    if "user_id" not in session:
-        print("session expired")
 
     post_id = request.json.get("postId")
     post = Post.query.filter_by(id=post_id).first()
@@ -294,6 +307,7 @@ def post_delete():
     return jsonify({"post": post.to_json()}), 200
 
 @app.route('/api/post/get/<int:postid>', methods=['GET'])
+@check_token(serializer=serializer)
 def post_get(postid):
     post = Post.query.filter_by(id=postid).first()
     if not post:
@@ -302,6 +316,7 @@ def post_get(postid):
     return jsonify({"post": post.to_json()}), 200
 
 @app.route('/api/feed/get', methods=['GET'])
+@check_token(serializer=serializer)
 def feed_get():
     posts = Post.query.order_by(func.random()).limit(50).all()
 

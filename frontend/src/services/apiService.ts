@@ -1,12 +1,16 @@
 import axios from 'axios';
-import {config} from "typescript-eslint";
 
 const api = axios.create({
-  baseURL: 'http://45.79.216.238:5001/api',
+  baseURL: 'http://localhost:5001/api',
   timeout: 10000,
   headers: { 'Content-Type': 'application/json' },
   withCredentials: true
 });
+
+interface loginResponse {
+  user: any,
+  pfp: string,
+}
 
 const saveData = (data: any) => {
   try {
@@ -30,9 +34,9 @@ api.interceptors.response.use(
   }
 );
 api.interceptors.request.use((config) => {
-  console.log('Sending request with cookies:', document.cookie);
+  console.log('Request Cookies:', document.cookie);
   return config;
-})
+});
 
 export const verifyEmail = async (email: string) => {
   try {
@@ -55,16 +59,9 @@ export const verifyCode = async (code: string, payload: any) => {
   }
 };
 
-export const loginUser = async (email: string, passkey: string) => {
-  try {
-    const response = await api.post('/user/login', { email, passkey });
-    console.log('User logged in:', response.data);
-    saveData({ email, ...response.data });
-    return response.data;
-  } catch (error: any) {
-    console.error('Login failed:', error.response?.data || error.message);
-    throw error;
-  }
+export const loginUser = async (email: string, passkey: string): Promise<loginResponse> => {
+  const response = await api.post<loginResponse>("/user/login", { email, passkey });
+  return response.data;
 };
 
 
@@ -87,14 +84,7 @@ export const updateUser = async (data: any) => {
 };
 
 
-export const getUserData = async (email: string) => {
-  try {
-    const response = await api.post('/user/get', { email });
-    console.log('User data:', response.data);
-    saveData(response.data);
-    return response.data;
-  } catch (error: any) {
-    console.error('Error getting user data:', error.response?.data || error.message);
-    throw error;
-  }
+export const fetchUserProfile = async (email: string): Promise<any> => {
+  const response = await api.post("/user/get", { email });
+  return response.data;
 };

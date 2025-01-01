@@ -1,6 +1,5 @@
 import React from "react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
-import styles from "../style/ProfilePage.module.css";
 import SettingsLogo from "../assets/settings_logo.svg"
 
 const ProfilePage: React.FC = () => {
@@ -21,31 +20,31 @@ const ProfilePage: React.FC = () => {
     }
 
     return (
-      <div className={styles.outerContainer}>
+      <div className={""}>
         {/* Settings Button */}
         <button
-          className={styles.settingsButton}
+          className={""}
           onClick={() => navigate("/settings", { state: { user, pfp } })}
           >
-            <img className={styles.settingsIcon} src={SettingsLogo} alt="Settings Logo" />
+            <img className={""} src={SettingsLogo} alt="Settings Logo" />
         </button>
 
-        <div className={styles.profileContainer}>
-          <div className={styles.leftColumn}>
+        <div className={""}>
+          <div className={""}>
             <img
               src={`data:image/${user.pfpFormat || "jpeg"};base64,${pfp}`}
               alt="Profile"
-              className={styles.profilePicture}
+              className={""}
             />
             <h2>{user.first_name} {user.last_name}, UID: {user.id}</h2>
-            <div className={styles.bio}>
+            <div className={""}>
               <h3>Bio</h3>
               <p>{user.bio}</p>
             </div>
           </div>
-          <div className={styles.rightColumn}>
+          <div className={""}>
             <h1>{user.display_name}</h1>
-            <div className={styles.postsContainer}>
+            <div className={""}>
               <p>This is where posts would be.</p>
             </div>
           </div>
